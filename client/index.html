@@ -1,0 +1,62 @@
+<div>
+  <canvas id="myChart"></canvas>
+</div>
+<div>
+  <button id="addButton">Add random reading</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  USE_RANDOMISED = false
+  const ctx = document.getElementById('myChart');
+
+  const data = {
+    labels: [],
+    datasets: [{
+      label: 'My First Dataset',
+      data: [],
+      fill: false,
+      borderColor: 'rgb(75, 192, 192)',
+      tension: 0.1
+    }]
+  };
+
+  let newChart = new Chart(ctx, {
+    type: 'line',
+    data: data
+  });
+
+  function addData(chart, label, newData) {
+    chart.data.labels.push(label);
+    chart.data.datasets.forEach((dataset) => {
+        dataset.data.push(newData);
+    });
+    chart.update();
+}
+
+  const socket = new WebSocket('ws://localhost:3001');
+
+  socket.addEventListener('open', () => {
+    console.log('Connected to WebSocket server.');
+  });
+
+  socket.addEventListener('message', (event) => {
+    console.log("Received msg: ",event.data.toString())
+    
+    const data = JSON.parse(event.data)
+    console.log('plotting: ',data.SensorData[0].Temperature)
+
+    const randomised_data = data.SensorData[0].Temperature + Math.random() * (200-10) + 10
+
+    console.log('plotting with randomised', randomised_data)
+    addData(newChart, `${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`, USE_RANDOMISED ? randomised_data : data.SensorData[0].Temperature)
+  });
+
+  const button = document.getElementById("addButton")
+  button.addEventListener("click",(event)=>{
+    console.log(newChart.data.labels)
+    addData(newChart, `${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`, Math.random() * (200-10) + 10)
+  })
+  
+</script>

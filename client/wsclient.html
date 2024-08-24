@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Real-Time Logger</title>
+</head>
+<body>
+  <h1>Real-Time Logger</h1>
+  <div id="messages"></div>
+  <input type="text" id="messageInput" />
+  <button onclick="sendMessage()">Send data to ws</button>
+
+  <script>
+    const socket = new WebSocket('ws://localhost:3001');
+
+    socket.addEventListener('open', () => {
+      console.log('Connected to WebSocket server.');
+    });
+
+    socket.addEventListener('message', (event) => {
+      const messagesDiv = document.getElementById('messages');
+      messagesDiv.innerHTML += `<p>${event.data.toString()}</p>`;
+    });
+
+    function sendMessage() {
+      const messageInput = document.getElementById('messageInput');
+      const message = messageInput.value;
+      socket.send(message);
+      messageInput.value = '';
+    }
+  </script>
+</body>
+</html>
